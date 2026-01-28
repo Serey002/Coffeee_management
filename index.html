@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop Management System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6f4e37;
+            --secondary-color: #c9a87a;
+            --light-color: #f8f5f0;
+            --dark-color: #3e2723;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--secondary-color) !important;
+        }
+        
+        .sidebar {
+            background-color: var(--dark-color);
+            min-height: calc(100vh - 56px);
+            color: white;
+            padding-top: 20px;
+        }
+        
+        .sidebar a {
+            color: #ddd;
+            padding: 10px 15px;
+            display: block;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .sidebar i {
+            width: 25px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-color);
+            border-color: var(--dark-color);
+        }
+        
+        .kpi-card {
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .pos-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        
+        .pos-item:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .order-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .module {
+            display: none;
+        }
+        
+        .module.active {
+            display: block;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-buttons .btn {
+            padding: 3px 8px;
+            font-size: 12px;
+        }
+        
+        .alert-custom {
+            background-color: #e8f4f8;
+            border-left: 5px solid #3498db;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--dark-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-coffee me-2"></i>CoffeeShop Manager
+            </a>
+            <div class="d-flex align-items-center text-white">
+                <div class="me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <span>Owner</span>
+                </div>
+                <button class="btn btn-sm btn-outline-light" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-2 col-md-3 sidebar">
+                <nav class="nav flex-column">
+                    <a href="#" class="nav-link active" data-module="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="#" class="nav-link" data-module="pos">
+                        <i class="fas fa-cash-register"></i> POS System
+                    </a>
+                    <a href="#" class="nav-link" data-module="inventory">
+                        <i class="fas fa-boxes"></i> Inventory
+                    </a>
+                    <a href="#" class="nav-link" data-module="finance">
+                        <i class="fas fa-chart-line"></i> Finance
+                    </a>
+                    <a href="#" class="nav-link" data-module="customers">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    <a href="#" class="nav-link" data-module="staff">
+                        <i class="fas fa-user-friends"></i> Staff
+                    </a>
+                    <a href="#" class="nav-link" data-module="strategy">
+                        <i class="fas fa-chart-pie"></i> Strategy
+                    </a>
+                    <hr class="text-white-50">
+                    <div class="px-3 mt-3">
+                        <h6 class="text-white-50">Quick Stats</h6>
+                        <small>Today's Sales: <span id="sidebar-sales" class="text-warning">$0</span></small><br>
+                        <small>Active Orders: <span id="sidebar-orders" class="text-warning">0</span></small><br>
+                        <small>Low Stock: <span id="sidebar-lowstock" class="text-warning">0 items</span></small>
+                    </div>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-10 col-md-9 main-content">
+                <!-- Dashboard Module -->
+                <div id="dashboard" class="module active">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Dashboard Overview</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary btn-sm active" id="today-btn">Today</button>
+                            <button class="btn btn-outline-primary btn-sm" id="week-btn">This Week</button>
+                            <button class="btn btn-outline-primary btn-sm" id="month-btn">This Month</button>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="kpi-card">
+                                <div class="text-muted">Total Revenue</div>
+                                <div class="kpi-value">$<span id="revenue-total">0</span></div>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> 0% from last month</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="kpi-card">
+                                <div class="text-muted">Total Expenses</div>
+                                <div class="kpi-value">$<span id="expenses-total">0</span></div>
+                                <small class="text-danger"><i class="fas fa-arrow-up"></i> 0% from last month</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="kpi-card">
+                                <div class="text-muted">Net Profit</div>
+                                <div class="kpi-value">$<span id="profit-total">0</span></div>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> 0% from last month</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="kpi-card">
+                                <div class="text-muted">Orders Today</div>
+                                <div class="kpi-value"><span id="orders-today">0</span></div>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> 0% from yesterday</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <button class="btn btn-primary w-100 mb-2" id="quick-new-order">
+                                                <i class="fas fa-plus me-2"></i>New Order
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button class="btn btn-success w-100 mb-2" id="quick-add-inventory">
+                                                <i class="fas fa-box me-2"></i>Add Inventory
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button class="btn btn-info w-100 mb-2" id="quick-add-customer">
+                                                <i class="fas fa-user-plus me-2"></i>Add Customer
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button class="btn btn-warning w-100 mb-2" id="quick-add-staff">
+                                                <i class="fas fa-user-friends me-2"></i>Add Staff
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Orders -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-list-alt me-2"></i>Recent Orders
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" id="dashboard-new-order">
+                                        <i class="fas fa-plus me-1"></i>New Order
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Items</th>
+                                                    <th>Time</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recent-orders">
+                                                <tr><td colspan="5" class="text-center">No orders yet</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- POS Module -->
+                <div id="pos" class="module">
+                    <h2 class="mb-4"><i class="fas fa-cash-register me-2"></i>Point of Sale</h2>
+                    
+                    <div class="row">
+                        <!-- Menu Items -->
+                        <div class="col-md-8">
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-coffee me-2"></i>Menu Items
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" id="add-menu-item">
+                                        <i class="fas fa-plus me-1"></i>Add Item
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="menu-items">
+                                        <!-- Menu items will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Panel -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-shopping-cart me-2"></i>Current Order
+                                    <span class="badge bg-primary float-end" id="order-count">0 items</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="order-items" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-coffee fa-2x mb-3"></i>
+                                            <p>No items in order yet</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="order-summary mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Subtotal:</span>
+                                            <span>$<span id="subtotal">0.00</span></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Tax (8%):</span>
+                                            <span>$<span id="tax">0.00</span></span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between fw-bold">
+                                            <span>Total:</span>
+                                            <span>$<span id="total">0.00</span></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary btn-lg" id="checkout-btn">
+                                            <i class="fas fa-credit-card me-2"></i>Checkout
+                                        </button>
+                                        <button class="btn btn-outline-danger" id="clear-order">
+                                            <i class="fas fa-trash me-2"></i>Clear Order
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Module -->
+                <div id="inventory" class="module">
+                    <h2 class="mb-4"><i class="fas fa-boxes me-2"></i>Inventory Management</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-clipboard-list me-2"></i>Current Inventory
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" id="add-inventory-item">
+                                        <i class="fas fa-plus me-1"></i>Add Item
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item Name</th>
+                                                    <th>Category</th>
+                                                    <th>Current Stock</th>
+                                                    <th>Unit</th>
+                                                    <th>Low Stock Alert</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inventory-table">
+                                                <tr><td colspan="6" class="text-center">No inventory items yet</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Low Stock Items
+                                </div>
+                                <div class="card-body">
+                                    <div id="low-stock-items">
+                                        <div class="text-center text-muted py-3">All items are well stocked</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Finance Module -->
+                <div id="finance" class="module">
+                    <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Financial Dashboard</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Financial Summary
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="kpi-card">
+                                                <div class="text-muted">Monthly Revenue</div>
+                                                <div class="kpi-value">$<span id="monthly-revenue">0</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="kpi-card">
+                                                <div class="text-muted">Monthly Expenses</div>
+                                                <div class="kpi-value">$<span id="monthly-expenses">0</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="kpi-card">
+                                                <div class="text-muted">Monthly Profit</div>
+                                                <div class="kpi-value">$<span id="monthly-profit">0</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-calculator me-2"></i>Add Transaction
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Type</label>
+                                        <select class="form-select" id="transaction-type">
+                                            <option value="revenue">Revenue</option>
+                                            <option value="expense">Expense</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Amount ($)</label>
+                                        <input type="number" class="form-control" id="transaction-amount" min="0" step="0.01">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <input type="text" class="form-control" id="transaction-description">
+                                    </div>
+                                    <button class="btn btn-primary w-100" id="add-transaction">
+                                        <i class="fas fa-plus me-2"></i>Add Transaction
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customers Module -->
+                <div id="customers" class="module">
+                    <h2 class="mb-4"><i class="fas fa-users me-2"></i>Customer Management</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-user-friends me-2"></i>Customer Database
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" id="add-customer">
+                                        <i class="fas fa-user-plus me-1"></i>Add Customer
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Email</th>
+                                                    <th>Join Date</th>
+                                                    <th>Visits</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customer-table">
+                                                <tr><td colspan="6" class="text-center">No customers yet</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-id-card me-2"></i>Loyalty Program
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-4">
+                                        <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                                        <h4>Buy 10, Get 1 Free!</h4>
+                                        <p class="text-muted">Customers earn a stamp for each purchase</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Customer Phone</label>
+                                        <input type="text" class="form-control" id="loyalty-phone" placeholder="Enter customer phone">
+                                    </div>
+                                    <button class="btn btn-primary w-100" id="add-loyalty-stamp">
+                                        <i class="fas fa-star me-2"></i>Add Loyalty Stamp
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Staff Module -->
+                <div id="staff" class="module">
+                    <h2 class="mb-4"><i class="fas fa-user-friends me-2"></i>Staff Management</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-users me-2"></i>Staff Members
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" id="add-staff">
+                                        <i class="fas fa-user-plus me-1"></i>Add Staff
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Position</th>
+                                                    <th>Contact</th>
+                                                    <th>Hourly Rate</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="staff-table">
+                                                <tr><td colspan="6" class="text-center">No staff members yet</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-calendar-alt me-2"></i>Shift Management
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Staff Member</label>
+                                        <select class="form-select" id="shift-staff">
+                                            <option value="">Select staff member</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Shift Date</label>
+                                        <input type="date" class="form-control" id="shift-date">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Shift Time</label>
+                                        <select class="form-select" id="shift-time">
+                                            <option value="Morning (6 AM - 2 PM)">Morning (6 AM - 2 PM)</option>
+                                            <option value="Afternoon (2 PM - 10 PM)">Afternoon (2 PM - 10 PM)</option>
+                                            <option value="Full Day (6 AM - 10 PM)">Full Day (6 AM - 10 PM)</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary w-100" id="assign-shift">
+                                        <i class="fas fa-calendar-plus me-2"></i>Assign Shift
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Strategy Module -->
+                <div id="strategy" class="module">
+                    <h2 class="mb-4"><i class="fas fa-chart-pie me-2"></i>Business Strategy</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-bullseye me-2"></i>Goals & Targets
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Monthly Sales Target ($)</label>
+                                        <input type="number" class="form-control" id="sales-target" value="10000">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Monthly Sales ($)</label>
+                                        <input type="number" class="form-control" id="current-sales" value="0" readonly>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 20px;">
+                                        <div class="progress-bar bg-success" id="sales-progress" style="width: 0%">0%</div>
+                                    </div>
+                                    <button class="btn btn-primary w-100" id="update-sales">
+                                        <i class="fas fa-sync-alt me-2"></i>Update Sales Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-lightbulb me-2"></i>Business Insights
+                                </div>
+                                <div class="card-body">
+                                    <div id="business-insights">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Start by adding your first order to see insights
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary w-100 mt-3" id="generate-insights">
+                                        <i class="fas fa-chart-line me-2"></i>Generate Insights
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <!-- Add Menu Item Modal -->
+    <div class="modal fade" id="menuItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Menu Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" id="menu-item-name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category *</label>
+                        <select class="form-select" id="menu-item-category">
+                            <option value="Coffee">Coffee</option>
+                            <option value="Tea">Tea</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Special Drinks">Special Drinks</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price ($) *</label>
+                        <input type="number" class="form-control" id="menu-item-price" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-menu-item">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Inventory Item Modal -->
+    <div class="modal fade" id="inventoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Inventory Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" id="inventory-name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category *</label>
+                        <select class="form-select" id="inventory-category">
+                            <option value="Coffee Beans">Coffee Beans</option>
+                            <option value="Milk & Cream">Milk & Cream</option>
+                            <option value="Syrups">Syrups</option>
+                            <option value="Pastries">Pastries</option>
+                            <option value="Snacks">Snacks</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current Stock *</label>
+                        <input type="number" class="form-control" id="inventory-stock" min="0" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Unit *</label>
+                        <select class="form-select" id="inventory-unit">
+                            <option value="kg">kg</option>
+                            <option value="L">L</option>
+                            <option value="pieces">pieces</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Low Stock Alert</label>
+                        <input type="number" class="form-control" id="inventory-alert" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-inventory-item">Add Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="customerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="customer-name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="text" class="form-control" id="customer-phone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="customer-email">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-customer">Add Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Staff Modal -->
+    <div class="modal fade" id="staffModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Staff Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="staff-name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Position *</label>
+                        <select class="form-select" id="staff-position">
+                            <option value="Barista">Barista</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Cashier">Cashier</option>
+                            <option value="Server">Server</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="staff-phone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hourly Rate ($)</label>
+                        <input type="number" class="form-control" id="staff-rate" min="0" step="0.1" value="15.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-staff">Add Staff</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Complete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <h4>Order Successful!</h4>
+                        <p>Order #<span id="order-id">001</span> has been completed</p>
+                    </div>
+                    <div class="receipt p-3 bg-light rounded">
+                        <h6>Receipt</h6>
+                        <div id="receipt-items"></div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total:</span>
+                            <span>$<span id="receipt-total">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        // Application Data Storage
+        let coffeeShopData = {
+            menuItems: [
+                { id: 1, name: "Espresso", category: "Coffee", price: 3.50 },
+                { id: 2, name: "Americano", category: "Coffee", price: 4.00 },
+                { id: 3, name: "Cappuccino", category: "Coffee", price: 4.50 },
+                { id: 4, name: "Latte", category: "Coffee", price: 5.00 },
+                { id: 5, name: "Black Tea", category: "Tea", price: 3.00 },
+                { id: 6, name: "Green Tea", category: "Tea", price: 3.25 },
+                { id: 7, name: "Croissant", category: "Snacks", price: 2.50 },
+                { id: 8, name: "Chocolate Cookie", category: "Snacks", price: 1.75 }
+            ],
+            inventory: [
+                { id: 1, name: "Arabica Coffee Beans", category: "Coffee Beans", stock: 10, unit: "kg", lowAlert: 5 },
+                { id: 2, name: "Whole Milk", category: "Milk & Cream", stock: 20, unit: "L", lowAlert: 10 },
+                { id: 3, name: "Sugar", category: "Supplies", stock: 5, unit: "kg", lowAlert: 2 }
+            ],
+            customers: [],
+            staff: [],
+            orders: [],
+            transactions: [],
+            currentOrder: []
+        };
+
+        // Initialize the application
+        $(document).ready(function() {
+            // Load initial data
+            loadMenuItems();
+            loadInventory();
+            loadCustomers();
+            loadStaff();
+            loadRecentOrders();
+            updateDashboard();
+            
+            // Navigation
+            $('.sidebar a').click(function(e) {
+                e.preventDefault();
+                $('.sidebar a').removeClass('active');
+                $(this).addClass('active');
+                
+                const module = $(this).data('module');
+                $('.module').removeClass('active');
+                $('#' + module).addClass('active');
+            });
+            
+            // Quick Actions
+            $('#quick-new-order').click(function() {
+                $('.sidebar a[data-module="pos"]').click();
+            });
+            
+            $('#quick-add-inventory').click(function() {
+                $('.sidebar a[data-module="inventory"]').click();
+                $('#add-inventory-item').click();
+            });
+            
+            $('#quick-add-customer').click(function() {
+                $('.sidebar a[data-module="customers"]').click();
+                $('#add-customer').click();
+            });
+            
+            $('#quick-add-staff').click(function() {
+                $('.sidebar a[data-module="staff"]').click();
+                $('#add-staff').click();
+            });
+            
+            // Dashboard new order button
+            $('#dashboard-new-order').click(function() {
+                $('.sidebar a[data-module="pos"]').click();
+            });
+            
+            // Period buttons
+            $('#today-btn, #week-btn, #month-btn').click(function() {
+                $('#today-btn, #week-btn, #month-btn').removeClass('active');
+                $(this).addClass('active');
+                alert('Showing data for: ' + $(this).text());
+            });
+            
+            // POS Module
+            $('#add-menu-item').click(function() {
+                $('#menuItemModal').modal('show');
+            });
+            
+            $(document).on('click', '.menu-item-card', function() {
+                const itemId = $(this).data('id');
+                const item = coffeeShopData.menuItems.find(i => i.id == itemId);
+                
+                // Add to current order
+                const existingItem = coffeeShopData.currentOrder.find(i => i.id == itemId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    coffeeShopData.currentOrder.push({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: 1
+                    });
+                }
+                
+                updateOrderDisplay();
+            });
+            
+            $('#clear-order').click(function() {
+                coffeeShopData.currentOrder = [];
+                updateOrderDisplay();
+            });
+            
+            $('#checkout-btn').click(function() {
+                if (coffeeShopData.currentOrder.length === 0) {
+                    alert('Please add items to the order first');
+                    return;
+                }
+                
+                // Generate order ID
+                const orderId = 'ORD' + Date.now().toString().slice(-6);
+                $('#order-id').text(orderId);
+                
+                // Calculate total
+                let total = 0;
+                let receiptHtml = '';
+                
+                coffeeShopData.currentOrder.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    receiptHtml += `
+                        <div class="d-flex justify-content-between small">
+                            <span>${item.name} x${item.quantity}</span>
+                            <span>$${itemTotal.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+                
+                $('#receipt-items').html(receiptHtml);
+                $('#receipt-total').text(total.toFixed(2));
+                
+                // Save order
+                const newOrder = {
+                    id: orderId,
+                    items: coffeeShopData.currentOrder.map(item => `${item.name} x${item.quantity}`).join(', '),
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    amount: total.toFixed(2),
+                    status: 'Completed'
+                };
+                
+                coffeeShopData.orders.unshift(newOrder);
+                
+                // Add transaction
+                coffeeShopData.transactions.push({
+                    type: 'revenue',
+                    amount: total,
+                    description: 'Order #' + orderId,
+                    date: new Date().toLocaleDateString()
+                });
+                
+                // Clear current order
+                coffeeShopData.currentOrder = [];
+                
+                // Update displays
+                updateOrderDisplay();
+                updateDashboard();
+                loadRecentOrders();
+                
+                // Show success modal
+                $('#checkoutModal').modal('show');
+            });
+            
+            $('#save-menu-item').click(function() {
+                const name = $('#menu-item-name').val();
+                const category = $('#menu-item-category').val();
+                const price = parseFloat($('#menu-item-price').val());
+                
+                if (name && price) {
+                    const newItem = {
+                        id: coffeeShopData.menuItems.length + 1,
+                        name: name,
+                        category: category,
+                        price: price
+                    };
+                    
+                    coffeeShopData.menuItems.push(newItem);
+                    loadMenuItems();
+                    $('#menuItemModal').modal('hide');
+                    $('#menu-item-name, #menu-item-price').val('');
+                    alert('Menu item added successfully!');
+                } else {
+                    alert('Please fill in all required fields');
+                }
+            });
+            
+            // Inventory Module
+            $('#add-inventory-item').click(function() {
+                $('#inventoryModal').modal('show');
+            });
+            
+            $('#save-inventory-item').click(function() {
+                const name = $('#inventory-name').val();
+                const category = $('#inventory-category').val();
+                const stock = parseFloat($('#inventory-stock').val());
+                const unit = $('#inventory-unit').val();
+                const alertLevel = parseFloat($('#inventory-alert').val()) || 0;
+                
+                if (name && stock !== null) {
+                    const newItem = {
+                        id: coffeeShopData.inventory.length + 1,
+                        name: name,
+                        category: category,
+                        stock: stock,
+                        unit: unit,
+                        lowAlert: alertLevel
+                    };
+                    
+                    coffeeShopData.inventory.push(newItem);
+                    loadInventory();
+                    $('#inventoryModal').modal('hide');
+                    $('#inventory-name, #inventory-stock, #inventory-alert').val('');
+                    alert('Inventory item added successfully!');
+                } else {
+                    alert('Please fill in all required fields');
+                }
+            });
+            
+            // Finance Module
+            $('#add-transaction').click(function() {
+                const type = $('#transaction-type').val();
+                const amount = parseFloat($('#transaction-amount').val());
+                const description = $('#transaction-description').val();
+                
+                if (amount && description) {
+                    coffeeShopData.transactions.push({
+                        type: type,
+                        amount: amount,
+                        description: description,
+                        date: new Date().toLocaleDateString()
+                    });
+                    
+                    updateDashboard();
+                    $('#transaction-amount, #transaction-description').val('');
+                    alert('Transaction added successfully!');
+                } else {
+                    alert('Please fill in all fields');
+                }
+            });
+            
+            // Customers Module
+            $('#add-customer').click(function() {
+                $('#customerModal').modal('show');
+            });
+            
+            $('#save-customer').click(function() {
+                const name = $('#customer-name').val();
+                const phone = $('#customer-phone').val();
+                const email = $('#customer-email').val();
+                
+                if (name && phone) {
+                    const newCustomer = {
+                        id: coffeeShopData.customers.length + 1,
+                        name: name,
+                        phone: phone,
+                        email: email || 'N/A',
+                        joinDate: new Date().toLocaleDateString(),
+                        visits: 0,
+                        loyaltyPoints: 0
+                    };
+                    
+                    coffeeShopData.customers.push(newCustomer);
+                    loadCustomers();
+                    $('#customerModal').modal('hide');
+                    $('#customer-name, #customer-phone, #customer-email').val('');
+                    alert('Customer added successfully!');
+                } else {
+                    alert('Please fill in name and phone number');
+                }
+            });
+            
+            $('#add-loyalty-stamp').click(function() {
+                const phone = $('#loyalty-phone').val();
+                if (phone) {
+                    const customer = coffeeShopData.customers.find(c => c.phone === phone);
+                    if (customer) {
+                        customer.loyaltyPoints += 1;
+                        customer.visits += 1;
+                        loadCustomers();
+                        $('#loyalty-phone').val('');
+                        alert(`Loyalty stamp added for ${customer.name}! Total stamps: ${customer.loyaltyPoints}`);
+                    } else {
+                        alert('Customer not found. Please add customer first.');
+                    }
+                } else {
+                    alert('Please enter customer phone number');
+                }
+            });
+            
+            // Staff Module
+            $('#add-staff').click(function() {
+                $('#staffModal').modal('show');
+            });
+            
+            $('#save-staff').click(function() {
+                const name = $('#staff-name').val();
+                const position = $('#staff-position').val();
+                const phone = $('#staff-phone').val();
+                const rate = parseFloat($('#staff-rate').val()) || 15.00;
+                
+                if (name && position) {
+                    const newStaff = {
+                        id: coffeeShopData.staff.length + 1,
+                        name: name,
+                        position: position,
+                        phone: phone || 'N/A',
+                        rate: rate,
+                        status: 'Active'
+                    };
+                    
+                    coffeeShopData.staff.push(newStaff);
+                    loadStaff();
+                    loadStaffForShifts();
+                    $('#staffModal').modal('hide');
+                    $('#staff-name, #staff-phone').val('');
+                    alert('Staff member added successfully!');
+                } else {
+                    alert('Please fill in name and position');
+                }
+            });
+            
+            $('#assign-shift').click(function() {
+                const staffId = $('#shift-staff').val();
+                const date = $('#shift-date').val();
+                const time = $('#shift-time').val();
+                
+                if (staffId && date && time) {
+                    const staff = coffeeShopData.staff.find(s => s.id == staffId);
+                    alert(`Shift assigned to ${staff.name} on ${date} (${time})`);
+                    $('#shift-date').val('');
+                } else {
+                    alert('Please fill in all fields');
+                }
+            });
+            
+            // Strategy Module
+            $('#update-sales').click(function() {
+                // Calculate total revenue from transactions
+                const totalRevenue = coffeeShopData.transactions
+                    .filter(t => t.type === 'revenue')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                $('#current-sales').val(totalRevenue.toFixed(2));
+                
+                const target = parseFloat($('#sales-target').val());
+                const progress = Math.min(100, (totalRevenue / target) * 100);
+                
+                $('#sales-progress').css('width', progress + '%').text(progress.toFixed(1) + '%');
+                
+                // Generate insights
+                generateInsights();
+                
+                alert('Sales data updated!');
+            });
+            
+            $('#generate-insights').click(function() {
+                generateInsights();
+                alert('Business insights generated!');
+            });
+            
+            // Logout
+            $('#logout-btn').click(function() {
+                if (confirm('Are you sure you want to logout?')) {
+                    alert('Logged out successfully!');
+                }
+            });
+            
+            // Initialize staff dropdown
+            loadStaffForShifts();
+        });
+        
+        // Load menu items for POS
+        function loadMenuItems() {
+            const container = $('#menu-items');
+            container.empty();
+            
+            coffeeShopData.menuItems.forEach(item => {
+                container.append(`
+                    <div class="col-md-3 mb-3">
+                        <div class="menu-item-card pos-item p-3 border rounded" data-id="${item.id}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">${item.name}</h6>
+                                    <div class="small text-muted">${item.category}</div>
+                                </div>
+                                <span class="badge bg-primary">$${item.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+        
+        // Load inventory
+        function loadInventory() {
+            const tableBody = $('#inventory-table');
+            const lowStockContainer = $('#low-stock-items');
+            
+            tableBody.empty();
+            lowStockContainer.empty();
+            
+            if (coffeeShopData.inventory.length === 0) {
+                tableBody.append('<tr><td colspan="6" class="text-center">No inventory items yet</td></tr>');
+                return;
+            }
+            
+            coffeeShopData.inventory.forEach(item => {
+                const isLowStock = item.lowAlert > 0 && item.stock < item.lowAlert;
+                const stockClass = isLowStock ? 'text-danger fw-bold' : '';
+                
+                tableBody.append(`
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.category}</td>
+                        <td class="${stockClass}">${item.stock} ${item.unit}</td>
+                        <td>${item.unit}</td>
+                        <td>${item.lowAlert} ${item.unit}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary edit-item" data-id="${item.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-item" data-id="${item.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+                
+                if (isLowStock) {
+                    lowStockContainer.append(`
+                        <div class="alert alert-warning py-2 mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>${item.name}</strong>: ${item.stock} ${item.unit} left (Alert: ${item.lowAlert} ${item.unit})
+                        </div>
+                    `);
+                }
+            });
+            
+            if ($('#low-stock-items').children().length === 0) {
+                lowStockContainer.append('<div class="text-center text-muted py-3">All items are well stocked</div>');
+            }
+            
+            // Add edit/delete functionality
+            $('.edit-item').click(function() {
+                const itemId = $(this).data('id');
+                const item = coffeeShopData.inventory.find(i => i.id == itemId);
+                if (item) {
+                    const newStock = prompt(`Enter new stock quantity for ${item.name} (current: ${item.stock} ${item.unit}):`, item.stock);
+                    if (newStock !== null) {
+                        item.stock = parseFloat(newStock);
+                        loadInventory();
+                        updateSidebarStats();
+                    }
+                }
+            });
+            
+            $('.delete-item').click(function() {
+                const itemId = $(this).data('id');
+                const item = coffeeShopData.inventory.find(i => i.id == itemId);
+                if (item && confirm(`Are you sure you want to delete "${item.name}"?`)) {
+                    coffeeShopData.inventory = coffeeShopData.inventory.filter(i => i.id != itemId);
+                    loadInventory();
+                    updateSidebarStats();
+                }
+            });
+        }
+        
+        // Load customers
+        function loadCustomers() {
+            const tableBody = $('#customer-table');
+            tableBody.empty();
+            
+            if (coffeeShopData.customers.length === 0) {
+                tableBody.append('<tr><td colspan="6" class="text-center">No customers yet</td></tr>');
+                return;
+            }
+            
+            coffeeShopData.customers.forEach(customer => {
+                tableBody.append(`
+                    <tr>
+                        <td>${customer.name}</td>
+                        <td>${customer.phone}</td>
+                        <td>${customer.email}</td>
+                        <td>${customer.joinDate}</td>
+                        <td>${customer.visits}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary edit-customer" data-id="${customer.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-customer" data-id="${customer.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            });
+            
+            // Add edit/delete functionality
+            $('.edit-customer').click(function() {
+                const customerId = $(this).data('id');
+                const customer = coffeeShopData.customers.find(c => c.id == customerId);
+                if (customer) {
+                    const newVisits = prompt(`Enter new visit count for ${customer.name} (current: ${customer.visits}):`, customer.visits);
+                    if (newVisits !== null) {
+                        customer.visits = parseInt(newVisits);
+                        loadCustomers();
+                    }
+                }
+            });
+            
+            $('.delete-customer').click(function() {
+                const customerId = $(this).data('id');
+                const customer = coffeeShopData.customers.find(c => c.id == customerId);
+                if (customer && confirm(`Are you sure you want to delete "${customer.name}"?`)) {
+                    coffeeShopData.customers = coffeeShopData.customers.filter(c => c.id != customerId);
+                    loadCustomers();
+                }
+            });
+        }
+        
+        // Load staff
+        function loadStaff() {
+            const tableBody = $('#staff-table');
+            tableBody.empty();
+            
+            if (coffeeShopData.staff.length === 0) {
+                tableBody.append('<tr><td colspan="6" class="text-center">No staff members yet</td></tr>');
+                return;
+            }
+            
+            coffeeShopData.staff.forEach(staff => {
+                tableBody.append(`
+                    <tr>
+                        <td>${staff.name}</td>
+                        <td>${staff.position}</td>
+                        <td>${staff.phone}</td>
+                        <td>$${staff.rate.toFixed(2)}/hr</td>
+                        <td><span class="badge bg-success">${staff.status}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary edit-staff" data-id="${staff.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-staff" data-id="${staff.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            });
+            
+            // Add edit/delete functionality
+            $('.edit-staff').click(function() {
+                const staffId = $(this).data('id');
+                const staff = coffeeShopData.staff.find(s => s.id == staffId);
+                if (staff) {
+                    const newRate = prompt(`Enter new hourly rate for ${staff.name} (current: $${staff.rate}/hr):`, staff.rate);
+                    if (newRate !== null) {
+                        staff.rate = parseFloat(newRate);
+                        loadStaff();
+                        loadStaffForShifts();
+                    }
+                }
+            });
+            
+            $('.delete-staff').click(function() {
+                const staffId = $(this).data('id');
+                const staff = coffeeShopData.staff.find(s => s.id == staffId);
+                if (staff && confirm(`Are you sure you want to delete "${staff.name}"?`)) {
+                    coffeeShopData.staff = coffeeShopData.staff.filter(s => s.id != staffId);
+                    loadStaff();
+                    loadStaffForShifts();
+                }
+            });
+        }
+        
+        // Load staff for shift assignment
+        function loadStaffForShifts() {
+            const select = $('#shift-staff');
+            select.empty();
+            select.append('<option value="">Select staff member</option>');
+            
+            coffeeShopData.staff.forEach(staff => {
+                select.append(`<option value="${staff.id}">${staff.name} (${staff.position})</option>`);
+            });
+        }
+        
+        // Update order display
+        function updateOrderDisplay() {
+            const orderItems = $('#order-items');
+            const orderCount = $('#order-count');
+            const subtotalEl = $('#subtotal');
+            const taxEl = $('#tax');
+            const totalEl = $('#total');
+            
+            if (coffeeShopData.currentOrder.length === 0) {
+                orderItems.html('<div class="text-center text-muted py-4"><i class="fas fa-coffee fa-2x mb-3"></i><p>No items in order yet</p></div>');
+                orderCount.text('0 items');
+                subtotalEl.text('0.00');
+                taxEl.text('0.00');
+                totalEl.text('0.00');
+                return;
+            }
+            
+            let html = '';
+            let subtotal = 0;
+            
+            coffeeShopData.currentOrder.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                html += `
+                    <div class="order-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${item.name}</strong>
+                            <div class="small text-muted">$${item.price.toFixed(2)} each</div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary me-2 remove-item" data-id="${item.id}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="me-2">x${item.quantity}</span>
+                            <span class="fw-bold">$${itemTotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const tax = subtotal * 0.08;
+            const total = subtotal + tax;
+            
+            orderItems.html(html);
+            orderCount.text(`${coffeeShopData.currentOrder.length} ${coffeeShopData.currentOrder.length === 1 ? 'item' : 'items'}`);
+            subtotalEl.text(subtotal.toFixed(2));
+            taxEl.text(tax.toFixed(2));
+            totalEl.text(total.toFixed(2));
+            
+            // Add remove item functionality
+            $('.remove-item').click(function() {
+                const itemId = $(this).data('id');
+                const itemIndex = coffeeShopData.currentOrder.findIndex(i => i.id == itemId);
+                
+                if (itemIndex > -1) {
+                    coffeeShopData.currentOrder.splice(itemIndex, 1);
+                    updateOrderDisplay();
+                }
+            });
+        }
+        
+        // Load recent orders
+        function loadRecentOrders() {
+            const tableBody = $('#recent-orders');
+            tableBody.empty();
+            
+            if (coffeeShopData.orders.length === 0) {
+                tableBody.append('<tr><td colspan="5" class="text-center">No orders yet</td></tr>');
+                return;
+            }
+            
+            coffeeShopData.orders.slice(0, 5).forEach(order => {
+                tableBody.append(`
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>${order.items}</td>
+                        <td>${order.time}</td>
+                        <td>$${order.amount}</td>
+                        <td><span class="badge bg-success">${order.status}</span></td>
+                    </tr>
+                `);
+            });
+        }
+        
+        // Update dashboard
+        function updateDashboard() {
+            // Calculate totals from transactions
+            const totalRevenue = coffeeShopData.transactions
+                .filter(t => t.type === 'revenue')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalExpenses = coffeeShopData.transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            const totalProfit = totalRevenue - totalExpenses;
+            
+            // Update display
+            $('#revenue-total').text(totalRevenue.toFixed(2));
+            $('#expenses-total').text(totalExpenses.toFixed(2));
+            $('#profit-total').text(totalProfit.toFixed(2));
+            $('#orders-today').text(coffeeShopData.orders.length);
+            
+            // Update finance module
+            $('#monthly-revenue').text(totalRevenue.toFixed(2));
+            $('#monthly-expenses').text(totalExpenses.toFixed(2));
+            $('#monthly-profit').text(totalProfit.toFixed(2));
+            
+            // Update sidebar
+            updateSidebarStats();
+        }
+        
+        // Update sidebar stats
+        function updateSidebarStats() {
+            const totalRevenue = coffeeShopData.transactions
+                .filter(t => t.type === 'revenue')
+                .reduce((sum, t) => sum + t.amount, 0);
+                
+            $('#sidebar-sales').text('$' + totalRevenue.toFixed(2));
+            $('#sidebar-orders').text(coffeeShopData.orders.length);
+            
+            // Count low stock items
+            const lowStockCount = coffeeShopData.inventory.filter(item => 
+                item.lowAlert > 0 && item.stock < item.lowAlert
+            ).length;
+            $('#sidebar-lowstock').text(lowStockCount + ' items');
+        }
+        
+        // Generate business insights
+        function generateInsights() {
+            const container = $('#business-insights');
+            container.empty();
+            
+            if (coffeeShopData.orders.length === 0) {
+                container.append(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Start by adding your first order to see insights
+                    </div>
+                `);
+                return;
+            }
+            
+            // Calculate average order value
+            const totalRevenue = coffeeShopData.orders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+            const avgOrderValue = totalRevenue / coffeeShopData.orders.length;
+            
+            // Count low stock items
+            const lowStockCount = coffeeShopData.inventory.filter(item => 
+                item.lowAlert > 0 && item.stock < item.lowAlert
+            ).length;
+            
+            // Customer count
+            const customerCount = coffeeShopData.customers.length;
+            
+            // Staff count
+            const staffCount = coffeeShopData.staff.length;
+            
+            container.append(`
+                <div class="alert alert-success">
+                    <i class="fas fa-chart-line me-2"></i>
+                    <strong>Average Order Value:</strong> $${avgOrderValue.toFixed(2)}
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Low Stock Items:</strong> ${lowStockCount} items need attention
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-users me-2"></i>
+                    <strong>Customer Base:</strong> ${customerCount} loyal customers
+                </div>
+                <div class="alert alert-primary">
+                    <i class="fas fa-user-friends me-2"></i>
+                    <strong>Staff Team:</strong> ${staffCount} team members
+                </div>
+            `);
+        }
+        
+        // Initialize insights
+        generateInsights();
+    </script>
+</body>
+</html>
