@@ -20,8 +20,13 @@
         /* Navbar */
         .navbar {
             background: linear-gradient(135deg, var(--coffee-dark) 0%, var(--coffee-brown) 100%);
+            padding: 20px 0px 20px 0px;
+            width: 100%;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
         }
+
         .profile{
             margin-left: 1380px;
             display: flex;
